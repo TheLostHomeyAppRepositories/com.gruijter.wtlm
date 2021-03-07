@@ -1,0 +1,13 @@
+{
+	"type": "number",
+	"title": {
+		"en": "Filled"
+	},
+	"units": {
+		"en": "%"
+	},
+	"getable": true,
+	"setable": false,
+	"insights": true,
+	"icon": "./assets/fill_ratio.svg"
+}

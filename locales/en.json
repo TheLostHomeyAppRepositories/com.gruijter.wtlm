@@ -1,0 +1,16 @@
+{
+	"settings": {
+		"tab1": {
+			"title": "Instructions",
+			"useTitle": "How to use",
+			"useInstructions": "Install the Tank Level Meter within range of Homey (max. 10 meters). Add it to Homey as a device. Now modify the advanced device settings to match the size of your tank."
+		},
+		"tab2": {
+			"title": "Logs",
+			"logs": "Logs",
+			"deletelogs": "Delete logs",
+			"deleteWarning": "Delete all logs?",
+			"deleted": "Logs deleted!"
+		}
+	}
+}

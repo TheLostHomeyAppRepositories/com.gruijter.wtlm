@@ -1,0 +1,14 @@
+{
+	"type": "number",
+	"title": {
+		"en": "Air gap"
+	},
+	"units": {
+		"en": "cm",
+		"nl": "cm"
+	},
+	"getable": true,
+	"setable": false,
+	"insights": true,
+	"icon": "./assets/air_gap.svg"
+}

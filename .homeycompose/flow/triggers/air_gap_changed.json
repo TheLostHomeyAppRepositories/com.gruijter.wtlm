@@ -1,0 +1,13 @@
+{
+    "id": "air_gap_changed",
+    "title": {
+        "en": "The water level changed"
+    },
+    "args": [
+        {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=ts_ft002"
+        }
+    ]
+}

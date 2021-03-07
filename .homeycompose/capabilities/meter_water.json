@@ -1,0 +1,14 @@
+{
+	"type": "number",
+	"title": {
+		"en": "Water Meter"
+	},
+	"units": {
+		"en": "m³"
+	  },
+	"decimals": 3,
+	"getable": true,
+	"setable": false,
+	"insights": true,
+	"uiComponent": "sensor"
+}

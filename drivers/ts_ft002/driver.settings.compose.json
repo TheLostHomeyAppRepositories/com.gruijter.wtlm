@@ -1,0 +1,61 @@
+[
+	{
+		"type": "group",
+		"label": {
+				"en": "Tank settings"
+		},
+		"children": [
+			{
+				"id": "tank_capacity",
+				"type": "number",
+				"label": {
+						"en": "Capacity of the tank (liter)"
+				},
+				"hint": {
+						"en": "This is the maximum amount of liquid the tank can hold."
+				},
+				"min": 0,
+				"value": 200
+			},
+			{
+					"id": "max_air_gap",
+					"type": "number",
+					"label": {
+							"en": "Maximum air gap (cm)"
+					},
+					"hint": {
+							"en": "This is the distance between the sensor and the minimum water level."
+					},
+					"min": 40,
+					"max": 1500,
+					"value": 80
+			},
+			{
+					"id": "min_air_gap",
+					"type": "number",
+					"label": {
+							"en": "Minimum air gap (cm)"
+					},
+					"hint": {
+							"en": "This is the distance between the sensor and the maximum water level."
+					},
+					"min": 10,
+					"max": 1000,
+					"value": 15
+			},
+			{
+				"id": "alarm_level",
+				"type": "number",
+				"label": {
+						"en": "Water alarm level (%)"
+				},
+				"hint": {
+						"en": "A fill ratio below this level will raise an alarm. Set to 0 to disable water alarm."
+				},
+				"min": 0,
+				"max": 100,
+				"value": 5
+			}
+		]
+	}
+]

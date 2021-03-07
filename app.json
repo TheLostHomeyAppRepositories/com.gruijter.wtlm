@@ -1,0 +1,267 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.gruijter.wtlm",
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "brandColor": "#009000",
+  "name": {
+    "en": "Wireless Tank Level Meter"
+  },
+  "description": {
+    "en": "433MHz level meter for water tanks"
+  },
+  "gtin": [
+    "0783335794713",
+    "783335794713"
+  ],
+  "category": [
+    "climate"
+  ],
+  "tags": {
+    "en": [
+      "ultrasonic",
+      "level",
+      "liquid",
+      "water",
+      "rain",
+      "barrel",
+      "tank",
+      "TS_FT002",
+      "Sorand"
+    ]
+  },
+  "images": {
+    "xlarge": "/assets/images/large.jpg",
+    "large": "/assets/images/large.jpg",
+    "small": "/assets/images/small.jpg"
+  },
+  "author": {
+    "name": "Robin Gruijter",
+    "email": "gruijter@hotmail.com"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Robin de Gruijter",
+        "email": "gruijter@hotmail.com"
+      }
+    ],
+    "translators": [
+      {
+        "name": "🇬🇧 Robin"
+      }
+    ]
+  },
+  "copyright": "Robin de Gruijter (gruijter@hotmail.com)",
+  "license": " GPL-3.0-or-later",
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "gruijter"
+      }
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/gruijter/com.gruijter.wtlm/issues"
+  },
+  "homeyCommunityTopicId": 44174,
+  "source": "https://github.com/gruijter/com.gruijter.wtlm",
+  "homepage": "https://github.com/gruijter/com.gruijter.wtlm/blob/master/README.md",
+  "support": "https://community.athom.com/t/44174",
+  "api": {
+    "getLogs": {
+      "method": "get",
+      "path": "/getlogs"
+    },
+    "deleteLogs": {
+      "method": "get",
+      "path": "/deletelogs"
+    }
+  },
+  "permissions": [
+    "homey:wireless:433"
+  ],
+  "flow": {
+    "triggers": [
+      {
+        "id": "air_gap_changed",
+        "title": {
+          "en": "The water level changed"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=ts_ft002"
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "id": "ts_ft002",
+      "name": {
+        "en": "TS_FT002"
+      },
+      "class": "sensor",
+      "capabilities": [
+        "measure_temperature",
+        "air_gap",
+        "fill_ratio",
+        "meter_water",
+        "alarm_water",
+        "alarm_battery"
+      ],
+      "images": {
+        "large": "/drivers/ts_ft002/assets/images/large.jpg",
+        "small": "/drivers/ts_ft002/assets/images/small.jpg"
+      },
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Tank settings"
+          },
+          "children": [
+            {
+              "id": "tank_capacity",
+              "type": "number",
+              "label": {
+                "en": "Capacity of the tank (liter)"
+              },
+              "hint": {
+                "en": "This is the maximum amount of liquid the tank can hold."
+              },
+              "min": 0,
+              "value": 200
+            },
+            {
+              "id": "max_air_gap",
+              "type": "number",
+              "label": {
+                "en": "Maximum air gap (cm)"
+              },
+              "hint": {
+                "en": "This is the distance between the sensor and the minimum water level."
+              },
+              "min": 40,
+              "max": 1500,
+              "value": 80
+            },
+            {
+              "id": "min_air_gap",
+              "type": "number",
+              "label": {
+                "en": "Minimum air gap (cm)"
+              },
+              "hint": {
+                "en": "This is the distance between the sensor and the maximum water level."
+              },
+              "min": 10,
+              "max": 1000,
+              "value": 15
+            },
+            {
+              "id": "alarm_level",
+              "type": "number",
+              "label": {
+                "en": "Water alarm level (%)"
+              },
+              "hint": {
+                "en": "A fill ratio below this level will raise an alarm. Set to 0 to disable water alarm."
+              },
+              "min": 0,
+              "max": 100,
+              "value": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "air_gap": {
+      "type": "number",
+      "title": {
+        "en": "Air gap"
+      },
+      "units": {
+        "en": "cm",
+        "nl": "cm"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "icon": "./assets/air_gap.svg"
+    },
+    "fill_ratio": {
+      "type": "number",
+      "title": {
+        "en": "Filled"
+      },
+      "units": {
+        "en": "%"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "icon": "./assets/fill_ratio.svg"
+    },
+    "meter_water": {
+      "type": "number",
+      "title": {
+        "en": "Water Meter"
+      },
+      "units": {
+        "en": "m³"
+      },
+      "decimals": 3,
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "uiComponent": "sensor"
+    }
+  },
+  "signals": {
+    "433": {
+      "ts_ft002": {
+        "sof": [
+          500,
+          948,
+          500,
+          464,
+          500,
+          948
+        ],
+        "words": [
+          [
+            500,
+            464
+          ],
+          [
+            500,
+            948
+          ]
+        ],
+        "interval": 22500,
+        "sensitivity": 0.2,
+        "repetitions": 2
+      }
+    }
+  }
+}

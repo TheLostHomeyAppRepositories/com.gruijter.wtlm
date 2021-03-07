@@ -1,0 +1,9 @@
+{
+  "name": "com.gruijter.wtlm",
+  "version": "1.0.0",
+  "main": "app.js",
+  "devDependencies": {},
+  "dependencies": {
+    "fixture-stdout": "^0.2.1"
+  }
+}

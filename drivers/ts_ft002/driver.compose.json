@@ -1,0 +1,32 @@
+{
+  "id": "ts_ft002",
+  "name": {
+    "en": "TS_FT002"
+  },
+  "class": "sensor",
+  "capabilities": [
+    "measure_temperature",
+    "air_gap",
+    "fill_ratio",
+    "meter_water",
+    "alarm_water",
+    "alarm_battery"
+  ],
+  "images": {
+    "large": "/drivers/ts_ft002/assets/images/large.jpg",
+    "small": "/drivers/ts_ft002/assets/images/small.jpg"
+  },
+  "pair": [
+		{
+			"id": "list_devices",
+			"template": "list_devices",
+			"navigation": {
+				"next": "add_devices"
+			}
+		},
+		{
+			"id": "add_devices",
+			"template": "add_devices"
+		}
+	]
+}

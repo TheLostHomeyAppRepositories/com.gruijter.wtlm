@@ -1,0 +1,81 @@
+{
+  "id": "com.gruijter.wtlm",
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "brandColor": "#009000",
+  "name": {
+    "en": "Wireless Tank Level Meter"
+  },
+  "description": {
+    "en": "433MHz level meter for water tanks"
+  },
+  "gtin": ["0783335794713", "783335794713"],
+  "category": [
+    "climate"
+  ],
+  "tags": {
+    "en": [
+      "ultrasonic",
+      "level",
+      "liquid",
+      "water",
+      "rain",
+      "barrel",
+      "tank",
+      "TS_FT002",
+      "Sorand"
+    ]
+  },
+  "images": {
+    "xlarge": "/assets/images/large.jpg",
+    "large": "/assets/images/large.jpg",
+    "small": "/assets/images/small.jpg"
+  },
+  "author": {
+    "name": "Robin Gruijter",
+    "email": "gruijter@hotmail.com"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Robin de Gruijter",
+        "email": "gruijter@hotmail.com"
+      }
+    ],
+    "translators": [
+      {
+        "name": "🇬🇧 Robin"
+      }
+    ]
+  },
+  "copyright": "Robin de Gruijter (gruijter@hotmail.com)",
+  "license": " GPL-3.0-or-later",
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "gruijter"
+      }
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/gruijter/com.gruijter.wtlm/issues"
+  },
+  "homeyCommunityTopicId": 44174,
+  "source": "https://github.com/gruijter/com.gruijter.wtlm",
+  "homepage": "https://github.com/gruijter/com.gruijter.wtlm/blob/master/README.md",
+  "support": "https://community.athom.com/t/44174",
+  "api": {
+    "getLogs": {
+      "method": "get",
+      "path": "/getlogs"
+    },
+    "deleteLogs": {
+      "method": "get",
+      "path": "/deletelogs"
+    }
+  },
+  "permissions": [
+    "homey:wireless:433"
+  ]
+}
