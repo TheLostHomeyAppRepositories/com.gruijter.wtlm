@@ -24,9 +24,9 @@ function updateLogs() {
 							if (line.includes('[err]')) return;
 						}
 						const logLine = line
-							.replace(' [MyApp]', '')
 							.replace(' [ManagerDrivers]', '')
-							.replace(' [ts_ft002]', '');
+							.replace(/\[Device:(.*?)\]/, '[dev]')
+							.replace(/\[Driver:(.*?)\]/, '[$1]');
 						lines += `${logLine}<br />`;
 					});
 				displayLogs(lines);

@@ -1,6 +1,6 @@
 {
   "id": "com.gruijter.wtlm",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "brandColor": "#009000",
@@ -10,7 +10,10 @@
   "description": {
     "en": "433MHz level meter for water tanks"
   },
-  "gtin": ["0783335794713", "783335794713"],
+  "gtin": [
+    "0783335794713",
+    "783335794713"
+  ],
   "category": [
     "climate"
   ],
@@ -28,7 +31,7 @@
     ]
   },
   "images": {
-    "xlarge": "/assets/images/large.jpg",
+    "xlarge": "/assets/images/xlarge.jpg",
     "large": "/assets/images/large.jpg",
     "small": "/assets/images/small.jpg"
   },

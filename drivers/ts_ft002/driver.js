@@ -40,45 +40,68 @@ class MyDriver extends Homey.Driver {
 
 	async onInit() {
 		this.log('Driver has been initialized');
-		this.discoveredIDs = [];	// discovered devices since app/driver start
+		this.discoveredDevices = {};	// discovered devices since app/driver start
 		this.startReceiving();
 	}
 
-	// eslint-disable-next-line class-methods-use-this
-	async onPairListDevices() {
-		return [
+	makeDeviceList() {
+		const capabilities = [
+			'measure_temperature',
+			'air_gap',
+			'fill_ratio',
+			'meter_water',
+			'alarm_water',
+			'alarm_battery',
+		];
+		const devices = [
 			{
-				name: 'TS_FT002',
+				name: 'TS_FT002_anyID',
 				data: {
 					id: 'TS_FT002',
 				},
 				settings: {
+					random_id: '256',
+					ignore_id: true,
+					ignore_out_of_range: true,
 					tank_capacity: 200,
 					max_air_gap: 80,
-					min_air_gap: 15,
+					min_air_gap: 25,
 					alarm_level: 5,
 				},
-				capabilities: [
-					'measure_temperature',
-					'air_gap',
-					'fill_ratio',
-					'meter_water',
-					'alarm_water',
-					'alarm_battery',
-				],
+				capabilities,
 			},
 		];
+		Object.keys(this.discoveredDevices).forEach((id) => {
+			const device = {
+				name: `TS_FT002_${id}`,
+				data: {
+					id: `TS_FT002_${id}`,
+				},
+				settings: {
+					random_id: id.toString(),
+					ignore_id: false,
+					ignore_out_of_range: true,
+					tank_capacity: 200,
+					max_air_gap: 80,
+					min_air_gap: 25,
+					alarm_level: 5,
+				},
+				capabilities,
+			};
+			devices.push(device);
+		});
+		return Promise.resolve(devices);
+	}
+
+	// eslint-disable-next-line class-methods-use-this
+	async onPairListDevices() {
+		return this.makeDeviceList();
 	}
 
 	async decode(payload) {	// payload is bitstring
 		try {
-			if (payload.length !== 68) {
-				if (this.discoveredIDs.length === 0) this.error('Unknown device data received:', payload);
-				throw Error('invalid message length received');
-			}
-
 			// add sync, split in nibbles, reverse the nibbles, convert to hex string
-			let data = 'a'; // always starts with 0xAF (sync). First part is thrown away by Homey SOF
+			let data = 'af'; // always starts with 0xAF (sync). First part is thrown away by Homey SOF
 			while (payload.length) {
 				const nibble = payload.splice(0, 4).reverse();
 				data += parseInt(nibble.join(''), 2).toString(16);
@@ -95,21 +118,25 @@ class MyDriver extends Homey.Driver {
 				interval: parseInt(`${data[11]}`, 16), // always 0? Bit 7=0 180S, Bit 7 =1 30S, bit 4-6=1 5S https://bit.ly/3ce3nPc
 				rain: parseInt(`${data[14]}${data[15]}`, 16), // always 0 (0x00) (https://bit.ly/3bivWLY)
 				crc: parseInt(`${data[16]}${data[17]}`, 16), // crc-8 of bytes 0-7 including sof
+				// timestamp: Date.now(),
 			};
 
 			if (!checkCRC(data)) {
-				if (this.discoveredIDs.length === 0) this.error('Unknown device data received, but CRC fails:', info);
-				throw Error('CRC failed');
+				if (Object.keys(this.discoveredDevices) === 0) this.error('First device data received, but CRC fails');
+				throw Error('CRC failed', info);
 			}
 
-			// log first data from new device, and add to discovered devices
-			if (!this.discoveredIDs.includes(info.randomID)) {
+			// log first data from new device
+			if (!this.discoveredDevices[info.randomID]) {
 				this.log('First data received from device:', info);
-				this.discoveredIDs.push(info.randomID);
 			}
 
-			if (checkCRC(data) && (info.sof !== 175 || info.msgType !== 17 || info.interval !== 0
-				|| info.rain !== 0 || info.batState !== 8)) this.error('SOMETHING IS DIFFERENT!', info);
+			// update discovered devices
+			this.discoveredDevices[info.randomID] = info;
+
+			// anomaly check
+			if (checkCRC(data) && (info.msgType !== 17 || info.interval !== 0
+				|| info.rain !== 0 || info.batState !== 8)) this.log('Anomaly:', info);
 
 			return info;
 		} catch (error) {
@@ -119,16 +146,13 @@ class MyDriver extends Homey.Driver {
 
 	async startReceiving() {
 		try {
-
 			// register signal and start listening to data by enabling receive
 			const mySignal = this.homey.rf.getSignal433('ts_ft002');
 			await mySignal.enableRX();
-
-			mySignal.on('payload', async (payload, first) => {
+			mySignal.on('payload', async (payload) => {	// payload, first
 				const info = await this.decode(payload);
 				if (info) this.homey.emit('infoReceived', info);
 			});
-
 		} catch (error) {
 			this.error(error.message);
 		}

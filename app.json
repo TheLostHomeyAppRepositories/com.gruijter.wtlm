@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.gruijter.wtlm",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "brandColor": "#009000",
@@ -32,7 +32,7 @@
     ]
   },
   "images": {
-    "xlarge": "/assets/images/large.jpg",
+    "xlarge": "/assets/images/xlarge.jpg",
     "large": "/assets/images/large.jpg",
     "small": "/assets/images/small.jpg"
   },
@@ -122,6 +122,9 @@
         {
           "id": "list_devices",
           "template": "list_devices",
+          "options": {
+            "singular": true
+          },
           "navigation": {
             "next": "add_devices"
           }
@@ -135,6 +138,47 @@
         {
           "type": "group",
           "label": {
+            "en": "Sensor settings"
+          },
+          "children": [
+            {
+              "id": "random_id",
+              "type": "label",
+              "label": {
+                "en": "Sensor ID"
+              },
+              "hint": {
+                "en": "Unique random ID of the sensor. The ID changes after battery replacement in the sensor, and a re-pair is needed unless you have selected 'ignore sensor ID'"
+              },
+              "value": ""
+            },
+            {
+              "id": "ignore_id",
+              "type": "checkbox",
+              "label": {
+                "en": "Ignore sensor ID"
+              },
+              "hint": {
+                "en": "When this is selected the Homey device will update on a valid message from ANY sensor ID. ONLY UNSELECT THIS IF YOU HAVE MULTIPLE SENSORS."
+              },
+              "value": true
+            },
+            {
+              "id": "ignore_out_of_range",
+              "type": "checkbox",
+              "label": {
+                "en": "Ignore out-of-range data"
+              },
+              "hint": {
+                "en": "When this is selected the Homey device will not update the air gap if the received value is not within the set max/min range."
+              },
+              "value": false
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
             "en": "Tank settings"
           },
           "children": [
@@ -145,7 +189,7 @@
                 "en": "Capacity of the tank (liter)"
               },
               "hint": {
-                "en": "This is the maximum amount of liquid the tank can hold."
+                "en": "This is the maximum amount of liquid the tank can hold. Note: 1m³ = 1000 liter."
               },
               "min": 0,
               "value": 200
@@ -172,9 +216,9 @@
               "hint": {
                 "en": "This is the distance between the sensor and the maximum water level."
               },
-              "min": 10,
+              "min": 25,
               "max": 1000,
-              "value": 15
+              "value": 25
             },
             {
               "id": "alarm_level",
@@ -246,6 +290,14 @@
           500,
           464,
           500,
+          948,
+          500,
+          948,
+          500,
+          948,
+          500,
+          948,
+          500,
           948
         ],
         "words": [
@@ -260,7 +312,9 @@
         ],
         "interval": 22500,
         "sensitivity": 0.2,
-        "repetitions": 2
+        "repetitions": 2,
+        "minimalLength": 64,
+        "maximalLength": 64
       }
     }
   }

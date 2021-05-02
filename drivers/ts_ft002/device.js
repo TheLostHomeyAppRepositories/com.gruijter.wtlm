@@ -26,13 +26,63 @@ class MyDevice extends Homey.Device {
 	async onInit() {
 		this.log(`device ready: ${this.getName()}`);
 
-		this.homey.on('infoReceived', (info) => {
+		// migrate from V1 app
+		if (!this.getSettings().random_id) {
+			await this.setSettings({ random_id: '', ignore_id: true, ignore_out_of_range: true });
+			this.log(`device ${this.getName()} migrated to version 1.1.0`);
+		}
+
+		// info for spike reduction
+		// this.info = [{ data: undefined }, { data: undefined }];	// array of last 2 data receptions
+
+		// start listening to driver
+		this.eventListener = (info) => {
+			const {	ignore_id: ignoreId, random_id: randomId } = this.getSettings();
+
+			// check if message is for this device
+			const idMatch = ((randomId === info.randomID.toString()) || randomId > 255);
+			if (!idMatch && !ignoreId) return;
+
+			// update setting label on changed
+			if (randomId !== info.randomID.toString()) this.setSettings({ random_id: info.randomID.toString() });
+
+			// update Homey device
 			this.handleInfo(info);
-		});
+
+			// reset watchdog
+			this.startWatchdog(3 * 60 * 60 * 1000);
+		};
+		this.homey.on('infoReceived', this.eventListener);
+
+		// set watchdogTimer
+		this.startWatchdog(3 * 60 * 60 * 1000);
+	}
+
+	startWatchdog(delay) {
+		this.setAvailable();
+		clearTimeout(this.timeOut);
+		this.timeOut = setTimeout(() => {
+			this.error('No valid data received for a long time.');
+			this.setUnavailable('No valid data received for a long time.');
+		}, delay);
 	}
 
 	async onAdded() {
-		this.log(`${this.getData().id} added: ${this.getName()}`);
+		try {
+			this.log(`${this.getData().id} added: ${this.getName()}`);
+			const firstId = Object.keys(this.driver.discoveredDevices)[0];
+			if (!firstId) return;
+			let addedId = this.getSettings().random_id;
+			if (addedId === '256') {
+				addedId = firstId;
+				this.setSettings({ random_id: addedId });
+			}
+			const discoveredInfo = this.driver.discoveredDevices[addedId];
+			if (discoveredInfo) this.handleInfo(discoveredInfo);
+		} catch (error) {
+			this.error(error);
+		}
+
 	}
 
 	/**
@@ -43,7 +93,7 @@ class MyDevice extends Homey.Device {
 	 * @param {string[]} event.changedKeys An array of keys changed since the previous version
 	 * @returns {Promise<string|void>} return a custom message that will be displayed
 	 */
-	async onSettings({ oldSettings, newSettings, changedKeys }) {
+	async onSettings() { // { oldSettings, newSettings, changedKeys }
 		this.log('MyDevice settings where changed');
 	}
 
@@ -53,6 +103,8 @@ class MyDevice extends Homey.Device {
 
 	async onDeleted() {
 		this.log(`${this.getData().id} deleted: ${this.getName()}`);
+		this.homey.removeListener('infoReceived', this.eventListener);
+		clearTimeout(this.timeOut);
 	}
 
 	setCapability(capability, value) {
@@ -64,30 +116,54 @@ class MyDevice extends Homey.Device {
 		}
 	}
 
-	async handleInfo(info) {
-		const {
-			tank_capacity: tankCapacity, max_air_gap: maxAirGap, min_air_gap: minAirGap, alarm_level: alarmLevel,
-		} = this.getSettings();
-		let fillRatio = Math.round(100 * ((maxAirGap - info.airGap) / (maxAirGap - minAirGap)));
-		fillRatio = Math.sign(fillRatio) === 1 ? fillRatio : 0;
-		const waterMeter = (fillRatio * tankCapacity) / 100000;	// in m3
-		const waterAlarm = fillRatio < alarmLevel;
-		const lowBat = info.batState !== 8;
+	handleInfo(info) {
+		try {
+			const {
+				tank_capacity: tankCapacity, max_air_gap: maxAirGap, min_air_gap: minAirGap, alarm_level: alarmLevel,
+				ignore_out_of_range: ignoreOOR,
+			} = this.getSettings();
 
-		// trigger custom capability flow cards
-		if (info.airGap !== this.getCapabilityValue('air_gap')) {
-			this.homey.flow.getDeviceTriggerCard('air_gap_changed')
-				.trigger(this, {})
-				.catch(this.error);
+			// // Spike reduction: only handle if info is same as last 1x info
+			// this.info.push(info);
+			// if (this.info[0].data && (this.info[1].data !== info.data)) { // || this.info[0].data !== info.data)) {
+			// 	console.log('spike detected. ignoring it');
+			// 	console.log(this.info);
+			// 	return;
+			// }
+			// this.info.shift(); 	// remove oldest data
+
+			// update temp and bat state
+			const lowBat = info.batState !== 8;
+			this.setCapability('measure_temperature', info.temp);
+			this.setCapability('alarm_battery', lowBat);
+
+			// update other states if air gap is within range
+			const ignoreAirGap = ignoreOOR && ((info.airGap > maxAirGap) || (info.airGap < minAirGap));
+			if (!ignoreAirGap) {
+
+				// calculate device info
+				let fillRatio = Math.round(100 * ((maxAirGap - info.airGap) / (maxAirGap - minAirGap)));
+				fillRatio = Math.sign(fillRatio) === 1 ? fillRatio : 0;
+				const waterMeter = (fillRatio * tankCapacity) / 100000;	// in m3
+				const waterAlarm = fillRatio < alarmLevel;
+
+				this.setCapability('air_gap', info.airGap);
+				this.setCapability('fill_ratio', fillRatio);
+				this.setCapability('meter_water', waterMeter);
+				this.setCapability('alarm_water', waterAlarm);
+
+				// trigger custom capability flow cards
+				if (info.airGap !== this.getCapabilityValue('air_gap')) {
+					this.homey.flow.getDeviceTriggerCard('air_gap_changed')
+						.trigger(this, {})
+						.catch(this.error);
+				}
+
+			} else this.log('Air gap info is out of range:', info.airGap);
+		} catch (error) {
+			this.error(error);
 		}
 
-		// update capabilities
-		this.setCapability('measure_temperature', info.temp);
-		this.setCapability('air_gap', info.airGap);
-		this.setCapability('fill_ratio', fillRatio);
-		this.setCapability('meter_water', waterMeter);
-		this.setCapability('alarm_water', waterAlarm);
-		this.setCapability('alarm_battery', lowBat);
 	}
 
 }

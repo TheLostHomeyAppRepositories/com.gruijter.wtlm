@@ -1,10 +1,12 @@
 {
-    "sof": [500, 948, 500, 464, 500, 948],
+    "sof": [500, 948, 500, 464, 500, 948, 500, 948, 500, 948, 500, 948, 500, 948],
     "words": [
         [500, 464],
         [500, 948]
     ],
     "interval": 22500,
     "sensitivity": 0.2,
-    "repetitions": 2
+    "repetitions": 2,
+    "minimalLength": 64,
+    "maximalLength": 64
 }

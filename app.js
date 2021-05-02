@@ -22,7 +22,7 @@ along with com.gruijter.wtlm. If not, see <http://www.gnu.org/licenses/>.
 const Homey = require('homey');
 const Logger = require('./captureLogs.js');
 
-class MyApp extends Homey.App {
+class App extends Homey.App {
 	/**
 	 * onInit is called when the app is initialized.
 	 */
@@ -65,4 +65,4 @@ class MyApp extends Homey.App {
 
 }
 
-module.exports = MyApp;
+module.exports = App;

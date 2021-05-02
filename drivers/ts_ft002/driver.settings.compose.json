@@ -2,6 +2,47 @@
 	{
 		"type": "group",
 		"label": {
+				"en": "Sensor settings"
+		},
+		"children": [
+			{
+				"id": "random_id",
+				"type": "label",
+				"label": {
+						"en": "Sensor ID"
+				},
+				"hint": {
+						"en": "Unique random ID of the sensor. The ID changes after battery replacement in the sensor, and a re-pair is needed unless you have selected 'ignore sensor ID'"
+				},
+				"value": ""
+			},
+			{
+				"id": "ignore_id",
+				"type": "checkbox",
+				"label": {
+						"en": "Ignore sensor ID"
+				},
+				"hint": {
+						"en": "When this is selected the Homey device will update on a valid message from ANY sensor ID. ONLY UNSELECT THIS IF YOU HAVE MULTIPLE SENSORS."
+				},
+				"value": true
+			},
+			{
+				"id": "ignore_out_of_range",
+				"type": "checkbox",
+				"label": {
+						"en": "Ignore out-of-range data"
+				},
+				"hint": {
+						"en": "When this is selected the Homey device will not update the air gap if the received value is not within the set max/min range."
+				},
+				"value": false
+			}
+		]
+	},
+	{
+		"type": "group",
+		"label": {
 				"en": "Tank settings"
 		},
 		"children": [
@@ -12,7 +53,7 @@
 						"en": "Capacity of the tank (liter)"
 				},
 				"hint": {
-						"en": "This is the maximum amount of liquid the tank can hold."
+						"en": "This is the maximum amount of liquid the tank can hold. Note: 1m³ = 1000 liter."
 				},
 				"min": 0,
 				"value": 200
@@ -39,9 +80,9 @@
 					"hint": {
 							"en": "This is the distance between the sensor and the maximum water level."
 					},
-					"min": 10,
+					"min": 25,
 					"max": 1000,
-					"value": 15
+					"value": 25
 			},
 			{
 				"id": "alarm_level",
