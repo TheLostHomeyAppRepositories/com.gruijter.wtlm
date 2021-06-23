@@ -21,15 +21,30 @@ along with com.gruijter.wtlm. If not, see <http://www.gnu.org/licenses/>.
 
 const Homey = require('homey');
 
+// CRC-8 expects hex string as input, e.g. 'afbb1190288052006f'
+const checkCRC = (data) => {
+	const dataArray = data.split('');
+	const byteArray = [];	// array with decimal bytes
+	while (dataArray.length) {
+		const byte = dataArray.shift().concat(dataArray.shift());
+		byteArray.push(parseInt(byte, 16));
+	}
+	const lastByte = byteArray.pop();
+	let checksum = 0;
+	// eslint-disable-next-line no-bitwise
+	byteArray.forEach((byte) => { checksum ^= byte; });
+	return checksum === lastByte;
+};
+
 class MyDevice extends Homey.Device {
 
 	async onInit() {
 		this.log(`device ready: ${this.getName()}`);
 
-		// migrate from V1 app
-		if (!this.getSettings().random_id) {
-			await this.setSettings({ random_id: '', ignore_id: true, ignore_out_of_range: true });
-			this.log(`device ${this.getName()} migrated to version 1.1.0`);
+		// migrate from V1.1.0 app
+		if (!this.getSettings().ignore_crc) {
+			await this.setSettings({ ignore_crc: false });
+			this.log(`device ${this.getName()} migrated to version 1.2.0`);
 		}
 
 		// info for spike reduction
@@ -120,8 +135,11 @@ class MyDevice extends Homey.Device {
 		try {
 			const {
 				tank_capacity: tankCapacity, max_air_gap: maxAirGap, min_air_gap: minAirGap, alarm_level: alarmLevel,
-				ignore_out_of_range: ignoreOOR,
+				ignore_out_of_range: ignoreOOR, ignore_crc: ignoreCRC,
 			} = this.getSettings();
+
+			// check CRC
+			if (!ignoreCRC && !checkCRC(info.data)) throw Error('CRC failed', info);
 
 			// // Spike reduction: only handle if info is same as last 1x info
 			// this.info.push(info);

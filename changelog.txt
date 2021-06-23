@@ -1,3 +1,4 @@
+v1.2.0  23.06.2021 Added option to ignore CRC.
 v1.1.0  02.05.2021 Added multiple device support. Added option to ignore out-of-range air gap. Improved log. Removed 'invalid message length received' messages. Show sensor ID in settings. Make device unavailable if not updated for over 3 hours. Fixed invalid_device_by_appid after device delete.
 v1.0.0  07.03.2021 First release.
 

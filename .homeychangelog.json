@@ -4,5 +4,8 @@
   },
   "1.1.0": {
     "en": "Added multiple device support. Added option to ignore out-of-range air gap. Improved log. Removed 'invalid message length received' messages. Show sensor ID in settings. Make device unavailable if not updated for over 3 hours. Fixed invalid_device_by_appid after device delete."
+  },
+  "1.2.0": {
+    "en": "Added option to ignore CRC."
   }
 }

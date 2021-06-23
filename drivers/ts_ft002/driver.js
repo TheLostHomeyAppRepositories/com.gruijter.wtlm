@@ -63,6 +63,7 @@ class MyDriver extends Homey.Driver {
 					random_id: '256',
 					ignore_id: true,
 					ignore_out_of_range: true,
+					ignore_crc: false,
 					tank_capacity: 200,
 					max_air_gap: 80,
 					min_air_gap: 25,
@@ -81,6 +82,7 @@ class MyDriver extends Homey.Driver {
 					random_id: id.toString(),
 					ignore_id: false,
 					ignore_out_of_range: true,
+					ignore_crc: false,
 					tank_capacity: 200,
 					max_air_gap: 80,
 					min_air_gap: 25,
@@ -121,10 +123,10 @@ class MyDriver extends Homey.Driver {
 				// timestamp: Date.now(),
 			};
 
-			if (!checkCRC(data)) {
-				if (Object.keys(this.discoveredDevices) === 0) this.error('First device data received, but CRC fails');
-				throw Error('CRC failed', info);
-			}
+			// if (!checkCRC(data)) {
+			// 	if (Object.keys(this.discoveredDevices) === 0) this.error('First device data received, but CRC fails');
+			// 	throw Error('CRC failed', info);
+			// }
 
 			// log first data from new device
 			if (!this.discoveredDevices[info.randomID]) {

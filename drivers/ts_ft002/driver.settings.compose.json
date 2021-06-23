@@ -36,6 +36,17 @@
 				"hint": {
 						"en": "When this is selected the Homey device will not update the air gap if the received value is not within the set max/min range."
 				},
+				"value": true
+			},
+			{
+				"id": "ignore_crc",
+				"type": "checkbox",
+				"label": {
+						"en": "Ignore CRC"
+				},
+				"hint": {
+						"en": "When this is selected the Homey device will ignore the CRC check. Warning: this can lead to invalid data."
+				},
 				"value": false
 			}
 		]
