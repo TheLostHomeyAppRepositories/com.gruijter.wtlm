@@ -7,5 +7,8 @@
   },
   "1.2.0": {
     "en": "Added option to ignore CRC."
+  },
+  "1.3.0": {
+    "en": "Removed option to ignore CRC. Added auto fix for shifted payload. Removed anomaly check. Increased log buffer."
   }
 }

@@ -28,7 +28,7 @@ class App extends Homey.App {
 	 */
 	async onInit() {
 		process.env.LOG_LEVEL = 'info'; // info or debug
-		if (!this.logger) this.logger = new Logger({ name: 'log', length: 200, homey: this.homey });
+		if (!this.logger) this.logger = new Logger({ name: 'log', length: 500, homey: this.homey });
 		this.log('Wireless Tank Level Meter app is running...');
 
 		// register some listeners

@@ -21,41 +21,23 @@ along with com.gruijter.wtlm. If not, see <http://www.gnu.org/licenses/>.
 
 const Homey = require('homey');
 
-// CRC-8 expects hex string as input, e.g. 'afbb1190288052006f'
-const checkCRC = (data) => {
-	const dataArray = data.split('');
-	const byteArray = [];	// array with decimal bytes
-	while (dataArray.length) {
-		const byte = dataArray.shift().concat(dataArray.shift());
-		byteArray.push(parseInt(byte, 16));
-	}
-	const lastByte = byteArray.pop();
-	let checksum = 0;
-	// eslint-disable-next-line no-bitwise
-	byteArray.forEach((byte) => { checksum ^= byte; });
-	return checksum === lastByte;
-};
-
 class MyDevice extends Homey.Device {
 
 	async onInit() {
 		this.log(`device ready: ${this.getName()}`);
 
-		// migrate from V1.1.0 app
-		if (!this.getSettings().ignore_crc) {
-			await this.setSettings({ ignore_crc: false });
-			this.log(`device ${this.getName()} migrated to version 1.2.0`);
-		}
-
-		// info for spike reduction
-		// this.info = [{ data: undefined }, { data: undefined }];	// array of last 2 data receptions
+		// // migrate from V1.2.0 app
+		// if (!(Object.keys(this.getSettings()).includes('try_reconstruct'))) {
+		// 	await this.setSettings({ try_reconstruct: false });
+		// 	this.log(`device ${this.getName()} migrated to version 1.3.0`);
+		// }
 
 		// start listening to driver
 		this.eventListener = (info) => {
 			const {	ignore_id: ignoreId, random_id: randomId } = this.getSettings();
 
 			// check if message is for this device
-			const idMatch = ((randomId === info.randomID.toString()) || randomId > 255);
+			const idMatch = (info.crcValid && ((randomId === info.randomID.toString()) || randomId > 255));
 			if (!idMatch && !ignoreId) return;
 
 			// update setting label on changed
@@ -109,7 +91,7 @@ class MyDevice extends Homey.Device {
 	 * @returns {Promise<string|void>} return a custom message that will be displayed
 	 */
 	async onSettings() { // { oldSettings, newSettings, changedKeys }
-		this.log('MyDevice settings where changed');
+		this.log('Device settings where changed');
 	}
 
 	async onRenamed(name) {
@@ -135,20 +117,8 @@ class MyDevice extends Homey.Device {
 		try {
 			const {
 				tank_capacity: tankCapacity, max_air_gap: maxAirGap, min_air_gap: minAirGap, alarm_level: alarmLevel,
-				ignore_out_of_range: ignoreOOR, ignore_crc: ignoreCRC,
+				ignore_out_of_range: ignoreOOR,
 			} = this.getSettings();
-
-			// check CRC
-			if (!ignoreCRC && !checkCRC(info.data)) throw Error('CRC failed', info);
-
-			// // Spike reduction: only handle if info is same as last 1x info
-			// this.info.push(info);
-			// if (this.info[0].data && (this.info[1].data !== info.data)) { // || this.info[0].data !== info.data)) {
-			// 	console.log('spike detected. ignoring it');
-			// 	console.log(this.info);
-			// 	return;
-			// }
-			// this.info.shift(); 	// remove oldest data
 
 			// update temp and bat state
 			const lowBat = info.batState !== 8;
@@ -179,7 +149,7 @@ class MyDevice extends Homey.Device {
 
 			} else this.log('Air gap info is out of range:', info.airGap);
 		} catch (error) {
-			this.error(error);
+			this.error(error.message || error);
 		}
 
 	}

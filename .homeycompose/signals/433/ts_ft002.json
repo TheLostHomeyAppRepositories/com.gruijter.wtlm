@@ -8,5 +8,5 @@
     "sensitivity": 0.2,
     "repetitions": 2,
     "minimalLength": 64,
-    "maximalLength": 64
+    "maximalLength": 66
 }

@@ -36,6 +36,36 @@ const checkCRC = (data) => {
 	return checksum === lastByte;
 };
 
+const decode = (payload) => {	// payload is array of bits
+	try {
+		// add sync, split in nibbles, reverse the nibbles, convert to hex string
+		let data = 'af'; // always starts with 0xAF (sync). First part is thrown away by Homey SOF
+		while (payload.length) {
+			const nibble = payload.splice(0, 4).reverse();
+			data += parseInt(nibble.join(''), 2).toString(16);
+		}
+
+		const info = {
+			data,
+			sof: parseInt(`${data[0]}${data[1]}`, 16),	// Start of Frame always 0xAF
+			randomID: parseInt(`${data[2]}${data[3]}`, 16),	// changes after long power down
+			msgType: parseInt(`${data[4]}${data[5]}`, 16), // always 17 (0x11) msgType https://bit.ly/3bivWLY, deviceID https://bit.ly/3bmGUzX
+			airGap: parseInt(`${data[7]}${data[6]}${data[8]}`, 16),	// in cm, range 0-1500, 5DC on invalid https://bit.ly/3ce3nPc
+			temp: (parseInt(`${data[13]}${data[12]}${data[10]}`, 16) - 400) / 10,	// in degrees celcius
+			batState: parseInt(`${data[9]}`, 16), // always 8? 0 = OK, any other value = Low, https://bit.ly/3ce3nPc
+			interval: parseInt(`${data[11]}`, 16), // always 0? Bit 7=0 180S, Bit 7 =1 30S, bit 4-6=1 5S https://bit.ly/3ce3nPc
+			rain: parseInt(`${data[14]}${data[15]}`, 16), // always 0 (0x00) (https://bit.ly/3bivWLY)
+			crc: parseInt(`${data[16]}${data[17]}`, 16), // crc-8 of bytes 0-7 including sof
+			crcValid: checkCRC(data),
+			// timestamp: Date.now(),
+		};
+
+		return Promise.resolve(info);
+	} catch (error) {
+		return Promise.reject(error);
+	}
+};
+
 class MyDriver extends Homey.Driver {
 
 	async onInit() {
@@ -63,7 +93,6 @@ class MyDriver extends Homey.Driver {
 					random_id: '256',
 					ignore_id: true,
 					ignore_out_of_range: true,
-					ignore_crc: false,
 					tank_capacity: 200,
 					max_air_gap: 80,
 					min_air_gap: 25,
@@ -82,7 +111,6 @@ class MyDriver extends Homey.Driver {
 					random_id: id.toString(),
 					ignore_id: false,
 					ignore_out_of_range: true,
-					ignore_crc: false,
 					tank_capacity: 200,
 					max_air_gap: 80,
 					min_air_gap: 25,
@@ -100,60 +128,39 @@ class MyDriver extends Homey.Driver {
 		return this.makeDeviceList();
 	}
 
-	async decode(payload) {	// payload is bitstring
-		try {
-			// add sync, split in nibbles, reverse the nibbles, convert to hex string
-			let data = 'af'; // always starts with 0xAF (sync). First part is thrown away by Homey SOF
-			while (payload.length) {
-				const nibble = payload.splice(0, 4).reverse();
-				data += parseInt(nibble.join(''), 2).toString(16);
-			}
-
-			const info = {
-				data,
-				sof: parseInt(`${data[0]}${data[1]}`, 16),	// Start of Frame always 0xAF
-				randomID: parseInt(`${data[2]}${data[3]}`, 16),	// changes after long power down
-				msgType: parseInt(`${data[4]}${data[5]}`, 16), // always 17 (0x11) msgType https://bit.ly/3bivWLY, deviceID https://bit.ly/3bmGUzX
-				airGap: parseInt(`${data[7]}${data[6]}${data[8]}`, 16),	// in cm, range 0-1500, 5DC on invalid https://bit.ly/3ce3nPc
-				temp: (parseInt(`${data[13]}${data[12]}${data[10]}`, 16) - 400) / 10,	// in degrees celcius
-				batState: parseInt(`${data[9]}`, 16), // always 8? 0 = OK, any other value = Low, https://bit.ly/3ce3nPc
-				interval: parseInt(`${data[11]}`, 16), // always 0? Bit 7=0 180S, Bit 7 =1 30S, bit 4-6=1 5S https://bit.ly/3ce3nPc
-				rain: parseInt(`${data[14]}${data[15]}`, 16), // always 0 (0x00) (https://bit.ly/3bivWLY)
-				crc: parseInt(`${data[16]}${data[17]}`, 16), // crc-8 of bytes 0-7 including sof
-				// timestamp: Date.now(),
-			};
-
-			// if (!checkCRC(data)) {
-			// 	if (Object.keys(this.discoveredDevices) === 0) this.error('First device data received, but CRC fails');
-			// 	throw Error('CRC failed', info);
-			// }
-
-			// log first data from new device
-			if (!this.discoveredDevices[info.randomID]) {
-				this.log('First data received from device:', info);
-			}
-
-			// update discovered devices
-			this.discoveredDevices[info.randomID] = info;
-
-			// anomaly check
-			if (checkCRC(data) && (info.msgType !== 17 || info.interval !== 0
-				|| info.rain !== 0 || info.batState !== 8)) this.log('Anomaly:', info);
-
-			return info;
-		} catch (error) {
-			return this.error(error.message);
-		}
-	}
-
 	async startReceiving() {
 		try {
 			// register signal and start listening to data by enabling receive
 			const mySignal = this.homey.rf.getSignal433('ts_ft002');
 			await mySignal.enableRX();
 			mySignal.on('payload', async (payload) => {	// payload, first
-				const info = await this.decode(payload);
-				if (info) this.homey.emit('infoReceived', info);
+
+				// check for shifted payload
+				while (payload.length > 64) {
+					this.log('Shifting payload');
+					payload.shift(); // remove first bit
+				}
+
+				const info = await decode(payload);
+				if (!info.crcValid) {
+					this.log('CRC failed');
+					return;
+				}
+
+				// log first data from new device
+				if (!this.discoveredDevices[info.randomID]) {
+					this.log('First data received from device:', info);
+				}
+
+				// update discovered devices
+				this.discoveredDevices[info.randomID] = info;
+
+				// emit info to homey device instances
+				this.homey.emit('infoReceived', info);
+
+				// anomaly check
+				// if (checkCRC(data) && (info.msgType !== 17 || info.interval !== 0
+				// 	|| info.rain !== 0 || info.batState !== 8)) this.log('Anomaly:', info);
 			});
 		} catch (error) {
 			this.error(error.message);
