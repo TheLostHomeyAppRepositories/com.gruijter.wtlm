@@ -1,5 +1,5 @@
 /*
-Copyright 2021, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2021 - 2023, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.wtlm.
 
@@ -49,7 +49,7 @@ class captureLogs {
 				return Promise.resolve(this.logArray);
 			}
 			this.homey.error('error parsing logfile: ', error.message);
-			return Promise.reject(error);
+			return Promise.resolve(this.logArray);
 		}
 	}
 

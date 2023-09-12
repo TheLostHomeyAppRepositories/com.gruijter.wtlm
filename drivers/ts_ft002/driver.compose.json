@@ -12,6 +12,10 @@
     "alarm_water",
     "alarm_battery"
   ],
+  "energy": {
+		"batteries": ["INTERNAL"],
+		"usageConstant": 0
+  },
   "images": {
     "large": "/drivers/ts_ft002/assets/images/large.jpg",
     "small": "/drivers/ts_ft002/assets/images/small.jpg"
