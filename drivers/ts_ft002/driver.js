@@ -1,5 +1,5 @@
 /*
-Copyright 2021 - 2023, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2021 - 2024, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.wtlm.
 
@@ -126,6 +126,46 @@ class MyDriver extends Homey.Driver {
 	// eslint-disable-next-line class-methods-use-this
 	async onPairListDevices() {
 		return this.makeDeviceList();
+	}
+
+	async onRepair(session, device) {
+		this.log('Repairing of device started', device.getName());
+		let selectedDevices = [];
+		session.setHandler('list_devices', () => {
+			const devices = [];
+			Object.keys(this.discoveredDevices).forEach((id) => {
+				const device = {
+					name: `ID:${id} airGap:${this.discoveredDevices[id].airGap} temp:${this.discoveredDevices[id].temp}`,
+					data: {
+						id: `TS_FT002_REPAIR${id}`,
+					},
+					settings: {
+						random_id: id.toString(),
+					},
+				};
+				devices.push(device);
+			});
+			return Promise.resolve(devices);
+		});
+		session.setHandler('list_devices_selection', (devices) => { selectedDevices = devices; });
+		session.setHandler('showView', async (viewId) => {
+			if (viewId === 'loading') {
+				const [dev] = selectedDevices;
+				if (!dev || !dev.settings) {
+					await session.showView('done');
+					throw Error('Device is corrupt!');
+				}
+				const newSettings = {
+					random_id: dev.settings.random_id,
+				};
+				this.log('old settings:', device.getSettings());
+				await device.setSettings(newSettings).catch(this.error);
+				await session.showView('done');
+				this.log('new settings:', device.getSettings());
+				device.restartDevice().catch(this.error);
+			}
+		});
+		session.setHandler('disconnect', () => { this.log('Repairing of device ended', device.getName());	});
 	}
 
 	async startReceiving() {

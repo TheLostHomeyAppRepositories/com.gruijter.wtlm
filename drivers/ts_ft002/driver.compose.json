@@ -33,5 +33,25 @@
 			"id": "add_devices",
 			"template": "add_devices"
 		}
+	],
+  "repair": [
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "options": {
+        "singular": true
+      },
+      "navigation": {
+        "next": "loading"
+      }
+    },
+    {
+      "id": "loading",
+      "template": "loading"
+    },
+    {
+      "id": "done",
+      "template": "done"
+    }
 	]
 }
