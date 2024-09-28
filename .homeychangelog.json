@@ -16,5 +16,8 @@
   },
   "1.4.0": {
     "en": "Repairing of device added."
+  },
+  "1.4.1": {
+    "en": "Capability flows compatibility >=fw12.2.0. Code cleanup."
   }
 }

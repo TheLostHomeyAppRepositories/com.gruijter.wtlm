@@ -1,3 +1,4 @@
+v1.4.1  28.09.2024 Capability flows compatibility >=fw12.2.0. Code cleanup.
 v1.4.0  09.07.2024 Repairing of device added.
 v1.3.0  30.06.2021 Removed option to ignore CRC. Added auto fix for shifted payload. Removed anomaly check. Increased log buffer.
 v1.2.0  23.06.2021 Added option to ignore CRC.

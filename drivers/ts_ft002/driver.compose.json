@@ -12,6 +12,11 @@
     "alarm_water",
     "alarm_battery"
   ],
+  "capabilitiesOptions": {
+    "meter_water": { 
+			"decimals": 3
+    }
+	},
   "energy": {
 		"batteries": ["INTERNAL"],
 		"usageConstant": 0
